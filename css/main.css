@@ -2,3 +2,70 @@
     object-fit: cover;
     object-position: top;
 }
+
+/*spiderman*/
+
+/* Estructura de la cabeza*/
+
+.head{
+    background-image: 
+        linear-gradient(
+        transparent 49%, black 50%, transparent 50%),
+        linear-gradient(-45deg,
+        transparent 49%, black 50%, transparent 50%),
+        linear-gradient(45deg,
+        transparent 49%, black 50%, transparent 50%),
+        linear-gradient(90deg,
+        transparent 49%, black 50%, transparent 50%),
+    
+    repeating-radial-gradient(
+        rgb(200, 25, 25) 0%,
+        rgb(200, 25, 24) 10%,
+        rgb(0, 25, 25) 11%,
+        rgb(200, 25, 25) 12%
+    
+    );
+
+    width: 700px;
+    padding-top: 50px;
+    padding-bottom: 300px;
+
+
+    border-radius: 40%;
+    border-top-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+    margin: 0 auto;
+}
+
+/* Ojos negros*/
+.content-eyes {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+.black {
+    width: 300px;
+    height: 400px;
+    background: 
+    linear-gradient(36deg, black 45%,
+    transparent 45%);
+    border-radius: 50%;
+    //margin-left: 30px;
+    display: inline-block;
+}
+
+
+/* Ojos blancos*/
+
+.white {
+    width: 200px;
+    height: 300px;
+    margin-top: 80px;
+    margin-left: 40px;
+    position: absolute;
+    background: 
+    linear-gradient(36deg, white 45%,
+    transparent 45%);
+    border-radius: 50%;
+/*     margin-left: 30px;
+ */}
