@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>¡Feliz Cumpleaños Pao! 🎂✨</title>
+  <!-- NOTA: sin Tailwind a propósito (el CDN fallaba sin red). Todo es CSS vanilla inline: funciona offline y en GitHub Pages. -->
+  <!-- canvas-confetti por CDN, con fallback propio si no hay red -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    /* ===== Base móvil primero ===== */
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      min-height: 100vh; min-height: 100dvh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      transition: background 1s ease;
+      color: #44403c;
+    }
+    /* Fondos por paso (se cambian con body[data-paso]) */
+    body[data-paso="1"] {
+      background:
+        linear-gradient(rgba(255,251,235,.86), rgba(255,241,242,.90)),
+        url("./cumpleimagen.jpeg") center 30% / cover no-repeat,
+        linear-gradient(135deg, #fef3c7, #ffe4e6);
+    }
+    body[data-paso="2"] { background: linear-gradient(135deg, #ddd6fe, #fbcfe8 55%, #ffe4e6); }
+    body[data-paso="3"] { background: linear-gradient(135deg, #f9a8d4, #fecdd3 50%, #fde68a); }
+
+    .hidden { display: none !important; }
+    .wrap { width: min(92vw, 36rem); margin: 0 auto; }
+    .wrap-narrow { width: min(92vw, 28rem); margin: 0 auto; }
+
+    /* Tarjetas */
+    .card {
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      border-radius: 1.5rem; box-shadow: 0 20px 45px rgba(0,0,0,.15);
+      padding: 2rem 1.5rem; text-align: center;
+    }
+    .card-carta { border-top: 8px solid #f472b6; padding: 1.5rem 1.25rem 2rem; }
+    .emoji-big { font-size: 2.5rem; margin-bottom: .5rem; }
+    h1 { font-size: clamp(1.4rem, 5.5vw, 1.9rem); line-height: 1.3; margin: 0; color: #44403c; }
+    .sub { color: #78716c; font-size: .95rem; margin-top: .6rem; }
+
+    /* Botones táctiles */
+    .btn {
+      display: inline-block; border: 0; cursor: pointer; touch-action: manipulation;
+      min-height: 48px; padding: .85rem 2rem; border-radius: 999px;
+      font-size: 1rem; font-weight: 700; transition: transform .15s, background .2s;
+    }
+    .btn:active { transform: scale(.95); }
+    .btn-pink { background: #ec4899; color: #fff; box-shadow: 0 10px 25px rgba(236,72,153,.35); width: 100%; }
+    .btn-pink:hover { background: #db2777; }
+    .btn-amber { background: #fbbf24; color: #44403c; box-shadow: 0 8px 20px rgba(0,0,0,.12); margin-top: 1.2rem; }
+    .btn-amber:hover { background: #f59e0b; }
+    @media (min-width: 480px) { .btn-pink { width: auto; } }
+
+    /* Fundido entre pasos */
+    .fade { transition: opacity .6s ease, transform .6s ease; }
+    .fade-hidden { opacity: 0; transform: scale(.97); pointer-events: none; }
+
+    /* Foto hero en la carta */
+    .foto-hero {
+      width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 20%;
+      border-radius: 1rem; display: block; box-shadow: 0 10px 25px rgba(0,0,0,.18);
+    }
+    .foto-caption { font-size: .8rem; color: #a8a29e; margin: .5rem 0 0; }
+    .titulo-fiesta { font-size: clamp(1.8rem, 8vw, 3rem); color: #db2777; margin: .6rem 0 0; letter-spacing: -1px; }
+    .nombre { font-size: clamp(1.05rem, 4.5vw, 1.3rem); font-weight: 700; color: #57534e; margin: .25rem 0 0; }
+    .carta-texto {
+      margin-top: 1.2rem; text-align: left; background: #fff1f2; border-radius: 1rem;
+      padding: 1.2rem 1.1rem; line-height: 1.65; font-size: clamp(.9rem, 3.8vw, 1rem); color: #44403c;
+    }
+    .carta-texto p { margin: 0 0 .8rem; }
+    .carta-texto p:last-child { margin-bottom: 0; }
+    .firma { text-align: right; font-weight: 800; color: #db2777; }
+
+    /* ===== Pastel con divs ===== */
+    .pastel-msg { font-size: clamp(1.05rem, 4.6vw, 1.3rem); font-weight: 600; color: #57534e; margin: 0 0 1.2rem; }
+    .pastel { width: fit-content; margin: 0 auto; transform: scale(.92); animation: floaty 2.5s ease-in-out infinite; }
+    @media (min-width: 480px) { .pastel { transform: scale(1); } }
+    @keyframes floaty { 0%,100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+    #vela { width: fit-content; margin: 0 auto; cursor: pointer; user-select: none; touch-action: manipulation; padding: 10px 20px 0; }
+    #llama {
+      width: 24px; height: 40px; margin: 0 auto; border-radius: 999px;
+      background: linear-gradient(to top, #f97316, #fbbf24 55%, #fef9c3);
+      box-shadow: 0 0 25px 10px rgba(251,191,36,.55);
+      transform-origin: 50% 100%; animation: flicker .35s infinite alternate ease-in-out;
+    }
+    @keyframes flicker {
+      0%,100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+      25% { transform: scale(1.1,.9) rotate(2deg); opacity: .9; }
+      50% { transform: scale(.9,1.15) rotate(-1deg); opacity: 1; }
+      75% { transform: scale(1.05) rotate(1deg); opacity: .85; }
+    }
+    #humo { font-size: 1.6rem; margin-top: -4px; }
+    .mecha { width: 4px; height: 12px; background: #44403c; margin: 0 auto; }
+    .vela-cuerpo {
+      width: 24px; height: 64px; margin: 0 auto; border-radius: 6px;
+      border: 1px solid #f9a8d4;
+      background: repeating-linear-gradient(45deg, #fff 0 6px, #f472b6 6px 12px);
+    }
+    .piso { margin: 0 auto; position: relative; border-radius: 12px; }
+    .piso-1 { width: 144px; height: 56px; background: #f472b6; margin-top: 4px; }
+    .piso-2 { width: 192px; height: 64px; background: #f9a8d4; }
+    .piso-3 { width: 240px; max-width: 86vw; height: 64px; background: #ec4899; }
+    .frosting { position: absolute; top: 0; left: 0; right: 0; height: 16px; background: rgba(255,255,255,.92); border-radius: 12px 12px 0 0; }
+    .piso-nombre {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; letter-spacing: 3px; font-size: .9rem; padding-top: 8px;
+    }
+    .cereza { position: absolute; top: 26px; width: 12px; height: 12px; background: #ef4444; border-radius: 50%; }
+    .plato { width: 288px; max-width: 88vw; height: 16px; background: #fff; border-radius: 999px; margin: 0 auto; box-shadow: 0 8px 18px rgba(0,0,0,.15); }
+    .hint { margin-top: 1.2rem; font-size: .85rem; color: #78716c; animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+
+    /* Botón flotante música */
+    #musica-btn {
+      position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 50;
+      width: 52px; height: 52px; border-radius: 50%; font-size: 1.3rem;
+      background: #fff; border: 1px solid #fbcfe8; box-shadow: 0 10px 25px rgba(0,0,0,.2);
+      cursor: pointer; touch-action: manipulation; transition: transform .15s;
+    }
+    #musica-btn:active { transform: scale(.9); }
+
+    /* Confeti fallback (si el CDN no carga) */
+    .confeti-pieza { position: fixed; top: -12px; z-index: 60; width: 10px; height: 14px; pointer-events: none; animation: caer linear forwards; }
+    @keyframes caer { to { transform: translateY(110vh) rotate(720deg); } }
+  </style>
+</head>
+
+<body data-paso="1">
+
+  <!-- ============ PASO 1: Bienvenida (foto como fondo del body) ============ -->
+  <section id="paso-1" class="fade wrap-narrow card">
+    <div class="emoji-big">🎁</div>
+    <h1>Hola... Alguien me dijo<br />que hoy es un día muy especial 🤔</h1>
+    <p class="sub">Toca el botón para descubrirlo...</p>
+    <p style="margin-top:1rem"><button id="btn-porque" class="btn btn-pink">¿Ah sí? ¿Por qué?</button></p>
+  </section>
+
+  <!-- ============ PASO 2: Pastel interactivo ============ -->
+  <section id="paso-2" class="fade fade-hidden hidden wrap-narrow" style="text-align:center">
+    <p class="pastel-msg">Pide un deseo y haz clic en la vela para apagarla... 🎂</p>
+    <div class="pastel">
+      <div id="vela" title="¡Haz clic para soplar!">
+        <div id="llama"></div>
+        <div id="humo" class="hidden">💨</div>
+        <div class="mecha"></div>
+        <div class="vela-cuerpo"></div>
+      </div>
+      <div class="piso piso-1"><div class="frosting"></div>
+        <span class="cereza" style="left:24px"></span><span class="cereza" style="right:24px"></span>
+      </div>
+      <div class="piso piso-2"><div class="frosting"></div><div class="piso-nombre">PAO 🎉</div></div>
+      <div class="piso piso-3"><div class="frosting"></div></div>
+      <div class="plato"></div>
+    </div>
+    <p id="msg-vela" class="hint">👆 Toca la velita</p>
+  </section>
+
+  <!-- ============ PASO 3: Carta (foto como hero, sin vale) ============ -->
+  <section id="paso-3" class="fade fade-hidden hidden wrap card card-carta">
+    <img class="foto-hero" src="./cumpleimagen.jpeg" alt="Pao Morales celebrando su cumpleaños" fetchpriority="high" />
+    <p class="foto-caption">💛 Un día para celebrar contigo 💛</p>
+    <div class="emoji-big" style="margin-top:.6rem">🎂✨</div>
+    <h2 class="titulo-fiesta">¡FELIZ CUMPLEAÑOS!</h2>
+    <p class="nombre">Pao Morales 🎉✨</p>
+    <div class="carta-texto">
+      <p>Feliz Cumpleaños AWOOO!, <strong>Pao Morales</strong>! 🎉✨</p>
+      <p>Hoy se celebra a lo grande porque es el día de una persona increíble, auténtica y llena de una vibra espectacular. Que este nuevo año de vida te traiga risas infinitas, momentos inolvidables, mucha salud y el éxito que tanto te mereces.</p>
+      <p>Nunca dejes de contagiar a todos con tu energía única. ¡Espero que pases un día fenomenal, rodeada de mucho amor y consentimientos! 🎂🥳❤️</p>
+      <p class="firma">ATT: AWOOO! Cristian Torres 💌</p>
+    </div>
+    <button id="btn-otra-vez" class="btn btn-amber">🎊 ¡Más confeti!</button>
+  </section>
+
+  <!-- Audio local junto al index.html (ideal para GitHub Pages) -->
+  <audio id="musica" src="./happybirthday.ogg" loop preload="auto"></audio>
+
+  <!-- Botón flotante música -->
+  <button id="musica-btn" class="hidden" title="Pausar / reanudar música">🔊</button>
+
+  <script>
+    // ---------- Referencias ----------
+    const cuerpo = document.body;
+    const paso1 = document.getElementById('paso-1');
+    const paso2 = document.getElementById('paso-2');
+    const paso3 = document.getElementById('paso-3');
+    const vela = document.getElementById('vela');
+    const llama = document.getElementById('llama');
+    const humo = document.getElementById('humo');
+    const msgVela = document.getElementById('msg-vela');
+    const audio = document.getElementById('musica');
+    const btnMusica = document.getElementById('musica-btn');
+    let velaApagada = false;
+
+    // ---------- Cambio de paso con fundido + fondo ----------
+    function irAPaso(n) {
+      cuerpo.dataset.paso = String(n);
+      [paso1, paso2, paso3].forEach(p => {
+        p.classList.add('fade-hidden');
+        setTimeout(() => p.classList.add('hidden'), 350);
+      });
+      const destino = n === 1 ? paso1 : n === 2 ? paso2 : paso3;
+      setTimeout(() => {
+        destino.classList.remove('hidden');
+        requestAnimationFrame(() => requestAnimationFrame(() => destino.classList.remove('fade-hidden')));
+        destino.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 380);
+    }
+
+    document.getElementById('btn-porque').addEventListener('click', () => irAPaso(2));
+
+    // ---------- Confeti con fallback sin red ----------
+    function confetiFallback(cantidad) {
+      const colores = ['#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#a855f7', '#facc15'];
+      for (let i = 0; i < (cantidad || 80); i++) {
+        const d = document.createElement('div');
+        d.className = 'confeti-pieza';
+        d.style.left = Math.random() * 100 + 'vw';
+        d.style.background = colores[Math.floor(Math.random() * colores.length)];
+        d.style.animationDuration = (2 + Math.random() * 2) + 's';
+        document.body.appendChild(d);
+        setTimeout(() => d.remove(), 4500);
+      }
+    }
+    function burst(grande) {
+      if (typeof confetti !== 'undefined') {
+        confetti({ particleCount: grande || 150, spread: 100, origin: { y: 0.6 } });
+      } else { confetiFallback(grande || 150); }
+    }
+
+    // ---------- Apagar vela: música + confeti 3s + auto a paso 3 ----------
+    vela.addEventListener('click', () => {
+      if (velaApagada) return;
+      velaApagada = true;
+      llama.classList.add('hidden');
+      humo.classList.remove('hidden');
+      msgVela.textContent = '¡Deseo pedido! ✨ Que se cumpla...';
+      msgVela.style.animation = 'none';
+
+      audio.play().then(() => {
+        btnMusica.classList.remove('hidden');
+        btnMusica.textContent = '🔊';
+      }).catch(() => { btnMusica.classList.remove('hidden'); });
+
+      // Explosión masiva y continua ~3 segundos
+      burst(180);
+      const fin = Date.now() + 3000;
+      const intervalo = setInterval(() => {
+        if (typeof confetti !== 'undefined') {
+          confetti({ particleCount: 6, angle: 60, spread: 60, origin: { x: 0 } });
+          confetti({ particleCount: 6, angle: 120, spread: 60, origin: { x: 1 } });
+          confetti({ particleCount: 4, spread: 100, origin: { y: 0.5 } });
+        } else { confetiFallback(12); }
+        if (Date.now() > fin) clearInterval(intervalo);
+      }, 200);
+
+      setTimeout(() => irAPaso(3), 3300);
+    });
+
+    // ---------- Flotante: pausar / reanudar ----------
+    btnMusica.addEventListener('click', () => {
+      if (audio.paused) { audio.play(); btnMusica.textContent = '🔊'; }
+      else { audio.pause(); btnMusica.textContent = '🔇'; }
+    });
+
+    // ---------- Más confeti en la carta ----------
+    document.getElementById('btn-otra-vez').addEventListener('click', () => {
+      burst(150);
+      setTimeout(() => burst(80), 250);
+    });
+  </script>
+</body>
+</html>
